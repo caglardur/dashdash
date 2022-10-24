@@ -1,8 +1,8 @@
 <template>
 	<v-container fluid>
-		<Grid ref="grid" :data-items="result" :sortable="sortable" :sort="sort" @rowclick="rowClick" @sortchange="sortChangeHandler" :columns="columns" @cellclick="cellClick" :edit-field="'inEdit'" :row-render="cellFunction">
+		<Grid ref="grid" :data-items="result" :sortable="sortable" :sort="sort" @rowclick="rowClick" @sortchange="sortChangeHandler" :columns="columns" @itemchange="itemChange" @cellclick="cellClick" :edit-field="'inEdit'">
 			<template v-slot:myTemplate="{ props }">
-				<custom :column="props.column" :filterable="props.filterable" :filter="props.filter" :sortable="props.sortable" :sort="props.sort" :columns="columns" @sortchange="e => props.onSortchange(e)" @filterchange="e => props.onFilterchange(e)" @closemenu="e => props.onClosemenu(e)" @contentfocus="e => props.onContentfocus(e)" @columnssubmit="onColumnsSubmit" />
+				<custom :column="props.column" :filterable="props.filterable" :filter="props.filter" :sortable="props.sortable" :sort="props.sort" :columns="columns" @sortchange="onSortchange" @filterchange="onFilterchange" @closemenu="onClosemenu" @contentfocus="onContentfocus" @columnssubmit="onColumnsSubmit" />
 			</template>
 		</Grid>
 	</v-container>
@@ -70,15 +70,9 @@ export default defineComponent({
 					columnMenu: "myTemplate"
 				},
 				{
-					title: "Quantity Per Unit",
-					field: "QuantityPerUnit",
-					filter: "numeric",
-					columnMenu: "myTemplate"
-				},
-				{
-					title: "Unit Price",
-					field: "UnitPrice",
-					filter: "numeric",
+					title: "First Ordered On",
+					field: "FirstOrderedOn",
+					filter: "date",
 					columnMenu: "myTemplate"
 				},
 				{
@@ -143,6 +137,7 @@ export default defineComponent({
 	},
 	methods: {
 		itemChange: function (e: any) {
+			console.log("itemChange", e)
 			const data = this.gridData.slice()
 			const index = data.findIndex(d => d.ProductID === e.dataItem.ProductID)
 			data[index] = { ...data[index], [e.field]: e.value }
@@ -158,6 +153,7 @@ export default defineComponent({
 			}
 		},
 		addRecord() {
+			console.log("addRecord")
 			const newRecord = { ProductID: this.gridData.length + 1, ProductName: "", UnitsInStock: 0, Discontinued: false, FirstOrderedOn: new Date() }
 			const data = this.gridData.slice()
 			data.unshift(newRecord)
@@ -165,17 +161,32 @@ export default defineComponent({
 			this.editID = newRecord.ProductID
 		},
 		sortChangeHandler: function (e: any) {
+			console.log("sortChangeHandler", e)
 			this.sort = e.sort
 		},
 		onColumnsSubmit(columnsState: any) {
+			console.log(columnsState, "onColumnsSubmit")
 			this.columns = columnsState
 		},
 		cellClick: function (e: any) {
+			console.log("cellClick", e)
 			if (e.dataItem.inEdit && e.field === this.editField) {
 				return
 			}
 			this.editField = e.field
 			e.dataItem.inEdit = e.field
+		},
+		onFilterchange(e: any) {
+			console.log("onFilterchange", e)
+		},
+		onClosemenu(e: any) {
+			console.log("onClosemenu", e)
+		},
+		onSortchange(e: any) {
+			console.log("onSortchange", e)
+		},
+		onContentfocus(e: any) {
+			console.log("onContentfocus", e)
 		}
 	}
 })

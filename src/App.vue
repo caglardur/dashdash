@@ -33,14 +33,14 @@ export default defineComponent({
 body {
 	font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
 	font-size: 1rem !important;
-	background-color: rgb(30, 30, 30);
+	// background-color: rgb(30, 30, 30);
 }
-.main {
-	background-color: rgb(30, 30, 30);
-	color: rgb(212, 212, 212);
-}
+// .main {
+// 	background-color: rgb(30, 30, 30);
+// 	color: rgb(212, 212, 212);
+// }
 // $theme-type: dark;
-$base-bg: rgb(30, 30, 30);
-$base-text: rgb(212, 212, 212);
+// $base-bg: rgb(30, 30, 30);
+// $base-text: rgb(212, 212, 212);
 @import "@progress/kendo-theme-material/dist/all.scss";
 </style>

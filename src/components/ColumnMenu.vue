@@ -86,6 +86,7 @@ export default {
 			this.onSubmit()
 		},
 		onSubmit(event) {
+			console.log("onSubmit", event)
 			if (event) {
 				event.preventDefault()
 			}
@@ -108,6 +109,7 @@ export default {
 			this.$emit("closemenu")
 		},
 		filterChange(newDescriptor, e) {
+			console.log("filterChange", newDescriptor, e)
 			this.$emit("filterchange", newDescriptor, e)
 		},
 		sortChange(newDescriptor, e) {
