@@ -1,30 +1,50 @@
 <template>
-	<Bar :chart-data="chartData" />
+	<Chart
+		:style="{
+			width: '300px',
+			height: '100%'
+		}"
+	>
+		<ChartTitle :text="'Günlük satışlar'" />
+		<ChartCategoryAxis>
+			<ChartCategoryAxisItem :categories="categories">
+				<ChartCategoryAxisTitle :text="'Haftanın günleri'" />
+			</ChartCategoryAxisItem>
+		</ChartCategoryAxis>
+		<ChartSeries>
+			<ChartSeriesItem :type="'bar'" :gap="1" :spacing="0.25" :data-items="firstSeries" />
+			<ChartSeriesItem :type="'bar'" :gap="1" :data-items="secondSeries" />
+		</ChartSeries>
+	</Chart>
 </template>
 
 <script lang="ts">
-import { Bar } from "vue-chartjs"
 import { defineComponent } from "vue"
-import { Chart as ChartJS, Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale } from "chart.js"
-
-ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale)
+import { Chart, ChartSeries, ChartSeriesItem, ChartTitle, ChartCategoryAxis, ChartCategoryAxisItem, ChartCategoryAxisTitle } from "@progress/kendo-vue-charts"
 
 export default defineComponent({
 	name: "BarChart",
-	components: { Bar },
+	components: {
+		Chart,
+		ChartSeries,
+		ChartSeriesItem,
+		ChartTitle,
+		ChartCategoryAxis,
+		ChartCategoryAxisItem,
+		ChartCategoryAxisTitle
+	},
 	data() {
 		return {
-			chartData: {
-				labels: ["Ocak", "Şubat", "Mart"],
-				datasets: [
-					{
-						label: "Data",
-						backgroundColor: "#f87979",
-						data: [40, 20, 12]
-					}
-				]
-			}
+			firstSeries: [1, 2, 3, 5, 4],
+			secondSeries: [2, 3, 4, 6, 1],
+			categories: ["Pts", "Sal", "Çar", "Per", "Cum"]
 		}
 	}
 })
 </script>
+<style scoped>
+.k-chart {
+	height: auto;
+	background-color: black;
+}
+</style>
