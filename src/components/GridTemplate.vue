@@ -1,18 +1,14 @@
 <template>
 	<v-container fluid>
-		<Grid ref="grid" :data-items="result" :sortable="sortable" :sort="sort" @rowclick="rowClick" @sortchange="sortChangeHandler" :columns="columns" @itemchange="itemChange" @cellclick="cellClick" :edit-field="'inEdit'">
-			<template v-slot:myTemplate="{ props }">
-				<custom :column="props.column" :filterable="props.filterable" :filter="props.filter" :sortable="props.sortable" :sort="props.sort" :columns="columns" @sortchange="onSortchange" @filterchange="onFilterchange" @closemenu="onClosemenu" @contentfocus="onContentfocus" @columnssubmit="onColumnsSubmit" />
-			</template>
-		</Grid>
+		<Grid :data-items="gridData" :take="take" :skip="skip" :sortable="true" :sort="sort" :filter="filter" @datastatechange="dataStateChange" :pageable="true" :column-menu="columnMenu" :columns="columns"> </Grid>
 	</v-container>
 </template>
 
 <script lang="ts">
 import { defineComponent } from "vue"
-import { Grid } from "@progress/kendo-vue-grid"
+import { Grid, GridColumnProps } from "@progress/kendo-vue-grid"
 import { orderBy, SortDescriptor } from "@progress/kendo-data-query"
-import ColumnMenu from "./ColumnMenu.vue"
+import { process } from "@progress/kendo-data-query"
 
 interface GridDataItem {
 	ProductID: number
@@ -25,70 +21,23 @@ interface GridDataItem {
 export default defineComponent({
 	name: "GridTemplate",
 	components: {
-		Grid: Grid,
-		custom: ColumnMenu
-	},
-	computed: {
-		sortable(): { allowUnsort: boolean; mode: string } {
-			return {
-				allowUnsort: this.allowUnsort,
-				mode: this.multiple ? "multiple" : "single"
-			}
-		},
-		getData(): GridDataItem[] {
-			return this.gridData.map((item: GridDataItem) => Object.assign({ inEdit: item.ProductID === this.editID }, item))
-		},
-		result(): any {
-			return orderBy(this.gridData, this.sort)
-		}
+		Grid: Grid
 	},
 	data: function () {
 		return {
-			editField: undefined,
-			allowUnsort: true,
-			multiple: false,
-			dataState: {
-				take: 0,
-				skip: 0
-			},
-			sort: Array<SortDescriptor>(),
-			updatedData: [],
-			editID: null || Number(),
-			group: [{ field: "UnitsInStock" }],
-			expandedItems: [],
-			columns: [
-				{
-					title: "Product Id",
-					field: "ProductID",
-					filter: "numeric",
-					columnMenu: "myTemplate"
-				},
-				{
-					title: "Product Name",
-					field: "ProductName",
-					filter: "text",
-					columnMenu: "myTemplate"
-				},
-				{
-					title: "First Ordered On",
-					field: "FirstOrderedOn",
-					filter: "date",
-					columnMenu: "myTemplate"
-				},
-				{
-					title: "Units In Stock",
-					field: "UnitsInStock",
-					filter: "numeric",
-					columnMenu: "myTemplate"
-				},
-				{
-					title: "Discontinued",
-					field: "Discontinued",
-					filter: "boolean",
-					columnMenu: "myTemplate"
-				}
-			],
-			gridData:
+			columnMenu: true,
+			take: 10,
+			skip: 0,
+			sort: [],
+			filter: null,
+			columns:
+				[
+					{ field: "ProductID", title: "ID", filter: "numeric" },
+					{ field: "ProductName", title: "Name" },
+					{ field: "UnitPrice", filter: "numeric" },
+					{ field: "Discontinued", filter: "boolean" }
+				] || Array<GridColumnProps>(),
+			products:
 				[
 					{
 						ProductID: 1,
@@ -132,61 +81,33 @@ export default defineComponent({
 						Discontinued: false,
 						FirstOrderedOn: new Date(1996, 3, 19)
 					}
-				] || Array<GridDataItem>()
+				] || Array<GridDataItem>(),
+			gridData: Array<GridDataItem>()
 		}
 	},
+	created: function () {
+		this.getData()
+	},
 	methods: {
-		itemChange: function (e: any) {
-			console.log("itemChange", e)
-			const data = this.gridData.slice()
-			const index = data.findIndex(d => d.ProductID === e.dataItem.ProductID)
-			data[index] = { ...data[index], [e.field]: e.value }
-			this.gridData = data
-		},
-		rowClick: function (e: any) {
-			this.editID = e.dataItem.ProductID
-			e.dataItem.inEdit = true
-		},
-		closeEdit(e: any) {
-			if (e.target === e.currentTarget) {
-				this.editID = 0
+		getData: function () {
+			let dataState = {
+				take: this.take,
+				skip: this.skip,
+				filter: this.filter,
+				sort: this.sort
 			}
+			this.gridData = process(this.products, dataState)
 		},
-		addRecord() {
-			console.log("addRecord")
-			const newRecord = { ProductID: this.gridData.length + 1, ProductName: "", UnitsInStock: 0, Discontinued: false, FirstOrderedOn: new Date() }
-			const data = this.gridData.slice()
-			data.unshift(newRecord)
-			this.gridData = data
-			this.editID = newRecord.ProductID
+		createAppState(dataState: any) {
+			this.take = dataState.take
+			this.skip = dataState.skip
+			this.sort = dataState.sort
+			this.filter = dataState.filter
+			this.getData()
 		},
-		sortChangeHandler: function (e: any) {
-			console.log("sortChangeHandler", e)
-			this.sort = e.sort
-		},
-		onColumnsSubmit(columnsState: any) {
-			console.log(columnsState, "onColumnsSubmit")
-			this.columns = columnsState
-		},
-		cellClick: function (e: any) {
-			console.log("cellClick", e)
-			if (e.dataItem.inEdit && e.field === this.editField) {
-				return
-			}
-			this.editField = e.field
-			e.dataItem.inEdit = e.field
-		},
-		onFilterchange(e: any) {
-			console.log("onFilterchange", e)
-		},
-		onClosemenu(e: any) {
-			console.log("onClosemenu", e)
-		},
-		onSortchange(e: any) {
-			console.log("onSortchange", e)
-		},
-		onContentfocus(e: any) {
-			console.log("onContentfocus", e)
+		dataStateChange(event: any) {
+			console.log(event)
+			this.createAppState(event.data)
 		}
 	}
 })
