@@ -7,8 +7,8 @@
 <script lang="ts">
 import { defineComponent } from "vue"
 import { Grid, GridColumnProps } from "@progress/kendo-vue-grid"
-import { orderBy, SortDescriptor } from "@progress/kendo-data-query"
-import { process } from "@progress/kendo-data-query"
+import { CompositeFilterDescriptor, process } from "@progress/kendo-data-query"
+import { FilterDescriptor } from "@progress/kendo-vue-dropdowns/dist/npm/common/filterDescriptor"
 
 interface GridDataItem {
 	ProductID: number
