@@ -42,5 +42,5 @@ body {
 // $theme-type: dark;
 // $base-bg: rgb(30, 30, 30);
 // $base-text: rgb(212, 212, 212);
-@import "@progress/kendo-theme-material/dist/all.scss";
+@import "@progress/kendo-theme-default/dist/all.scss";
 </style>

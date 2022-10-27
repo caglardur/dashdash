@@ -17,7 +17,7 @@
     "@progress/kendo-theme-nouvelle": "^5.9.0",
     "@progress/kendo-vue-buttons": "^3.6.4",
     "@progress/kendo-vue-charts": "^3.6.4",
-    "@progress/kendo-vue-dropdowns": "^3.6.4",
+    "@progress/kendo-vue-dropdowns": "^3.7.1",
     "@progress/kendo-vue-grid": "^3.6.4",
     "@progress/kendo-vue-intl": "^3.6.4",
     "@progress/kendo-vue-scheduler": "^3.6.4",
