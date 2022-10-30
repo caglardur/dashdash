@@ -1,27 +1,38 @@
 <template>
 	<v-container fluid>
-		<Grid ref="grid" :data-items="gridData" :columns="columns" :edit-field="'inEdit'" :skip="skip" :sortable="true" :sort="sort" :filter="filter" @datastatechange="dataStateChange" :column-menu="columnMenu" :resizable="true" @itemchange="itemChange" @cellclick="cellClick" :navigatable="true" @keydown="onKeydown">
+		<Grid ref="grid" :data-items="gridData" :columns="columns" :edit-field="'inEdit'" :skip="skip" :sortable="true" :sort="sort" :filter="filter" @datastatechange="dataStateChange" :column-menu="columnMenu" :resizable="true" @itemchange="itemChange" :navigatable="true" @keydown="onKeydown">
+			<template v-slot:myTemplate="{ props }">
+				<td class="k-command-cell">
+					<kbutton class="k-grid-save-command text-white" :type="'button'" :theme-color="'primary'" @click="editHandler(props)"> Ekle </kbutton>
+					<kbutton class="k-grid-cancel-command" :type="'button'" @click="removeHandler(props)"> Sil </kbutton>
+				</td>
+			</template>
 			<grid-toolbar>
 				<div @click="closeEdit">
-					<kbutton title="Add new" :theme-color="'primary'" @click="addRecord"> Add new </kbutton>
+					<kbutton title="Add new" :theme-color="'primary'" @click="addRecord"> Add new (satır) </kbutton>
+				</div>
+				<div>
+					<kbutton title="Add new" :theme-color="'primary'"> Add new (popup) </kbutton>
 				</div>
 			</grid-toolbar>
 		</Grid>
+		<dialog-container v-if="productInEdit" :data-item="productInEdit"> </dialog-container>
 	</v-container>
 </template>
 
 <script lang="ts">
 import { defineComponent } from "vue"
-import { State } from "@progress/kendo-data-query"
+import { State, process } from "@progress/kendo-data-query"
 import { Button } from "@progress/kendo-vue-buttons"
 import { Grid, GridColumnProps, GridToolbar } from "@progress/kendo-vue-grid"
 
 interface GridDataItem {
-	ProductID: number
+	ProductID: number | null
 	ProductName: string
-	UnitPrice: number
+	UnitPrice: number | null
 	Discontinued: boolean
-	FirstOrderedOn: string
+	AddedDate: Date
+	inEdit?: boolean
 }
 
 export default defineComponent({
@@ -33,6 +44,11 @@ export default defineComponent({
 	},
 	data() {
 		return {
+			productInEdit: {
+				ProductName: String(),
+				UnitsInStock: Number(),
+				Discontinued: Boolean()
+			},
 			columnMenu: true,
 			take: 20,
 			skip: 0,
@@ -42,61 +58,58 @@ export default defineComponent({
 			editItem: -1,
 			editField: "",
 			editableColumns: ["ProductID", "ProductName", "UnitPrice", "Discontinued", "FirstOrderedOn"],
-			columns:
-				[
-					{ field: "ProductID", filter: "numeric" },
-					{ field: "ProductName", filter: "text" },
-					{ field: "UnitPrice", filter: "numeric" },
-					{ field: "Discontinued", filter: "boolean" },
-					{ field: "FirstOrderedOn", filter: "date" }
-				] ||
-				Array<GridColumnProps>() ||
-				null,
-			products:
-				[
-					{
-						ProductID: 1,
-						ProductName: "Chai",
-						UnitPrice: 39,
-						Discontinued: false,
-						FirstOrderedOn: new Date(1996, 8, 20).toDateString()
-					},
-					{
-						ProductID: 2,
-						ProductName: "Chang",
-						UnitPrice: 17,
-						Discontinued: false,
-						FirstOrderedOn: new Date(1996, 7, 12).toDateString()
-					},
-					{
-						ProductID: 3,
-						ProductName: "Aniseed Syrup",
-						UnitPrice: 13,
-						Discontinued: false,
-						FirstOrderedOn: new Date(1996, 8, 26).toDateString()
-					},
-					{
-						ProductID: 4,
-						ProductName: "Chef Anton's Cajun Seasoning",
-						UnitPrice: 53,
-						Discontinued: false,
-						FirstOrderedOn: new Date(1996, 8, 19).toDateString()
-					},
-					{
-						ProductID: 5,
-						ProductName: " Seasoning",
-						UnitPrice: 63,
-						Discontinued: false,
-						FirstOrderedOn: new Date(1996, 11, 19).toDateString()
-					},
-					{
-						ProductID: 6,
-						ProductName: "Cajun Seasoning",
-						UnitPrice: 24,
-						Discontinued: false,
-						FirstOrderedOn: new Date(1996, 3, 19).toDateString()
-					}
-				] || Array<GridDataItem>(),
+			columns: [{ field: "Index" }, { field: "ProductID", filter: "numeric" }, { field: "ProductName", filter: "text", editable: false }, { field: "UnitPrice", filter: "numeric" }, { field: "UnitAmount", filter: "numeric" }, { field: "Discontinued", filter: "boolean", editable: false }, { field: "AddedDate", filter: "date", editable: false }, { cell: "myTemplate", filterable: false, width: "220px" }] || Array<GridColumnProps>(),
+			products: [
+				{
+					ProductID: 1,
+					ProductName: "Chai",
+					UnitPrice: 39,
+					UnitAmount: 100,
+					Discontinued: false,
+					AddedDate: new Date(1996, 8, 20)
+				},
+				{
+					ProductID: 2,
+					ProductName: "Chang",
+					UnitPrice: 17,
+					UnitAmount: 100,
+					Discontinued: false,
+					AddedDate: new Date(1996, 7, 12)
+				},
+				{
+					ProductID: 3,
+					ProductName: "Aniseed Syrup",
+					UnitPrice: 13,
+					UnitAmount: 100,
+					Discontinued: false,
+					AddedDate: new Date(1996, 8, 26)
+				},
+				{
+					ProductID: 4,
+					ProductName: "Chef Anton's Cajun Seasoning",
+					UnitPrice: 53,
+					UnitAmount: 100,
+					Discontinued: false,
+					AddedDate: new Date(1996, 8, 19)
+				},
+				{
+					ProductID: 5,
+					ProductName: " Seasoning",
+					UnitPrice: 63,
+					UnitAmount: 100,
+					Discontinued: false,
+					AddedDate: new Date(1996, 11, 19)
+				},
+				{
+					ProductID: 6,
+					ProductName: "Cajun Seasoning",
+					UnitPrice: 24,
+					UnitAmount: 100,
+					Discontinued: false,
+					AddedDate: new Date(1996, 3, 19)
+				}
+			],
+			emptyProduct: Array<GridDataItem>(),
 			gridData: Array<GridDataItem>(),
 			dataState: Object as State
 		}
@@ -105,21 +118,18 @@ export default defineComponent({
 		this.getData()
 	},
 	methods: {
+		insert() {
+			this.productInEdit = {
+				ProductName: "",
+				UnitsInStock: 0,
+				Discontinued: false
+			}
+		},
 		onKeydown(e: any) {
 			console.log("onKeydown", e)
 		},
 		enterFunc(e: any) {
 			console.log("enter", e)
-		},
-		cellClick: function (e: any) {
-			// if (e.dataItem.inEdit && e.field === this.editField) {
-			//     return;
-			// }
-			console.log("cellClick", e)
-			this.editField = e.field
-			this.gridData = [...this.gridData]
-
-			e.dataItem.inEdit = e.field
 		},
 		rowClick: function (e: any) {
 			this.gridData.forEach((d: any) => {
@@ -137,8 +147,8 @@ export default defineComponent({
 				filter: this.filter!,
 				sort: this.sort
 			}
-			this.gridData = this.products.map(product => Object.assign({}, product))
-			// this.gridData = process(this.products, this.dataState).data
+			this.gridData = this.emptyProduct.map((product: GridDataItem) => Object.assign({ inEdit: true }, product))
+			this.gridData = process(this.gridData, this.dataState).data
 		},
 		createAppState(dataState: any) {
 			this.take = dataState.take
@@ -153,16 +163,16 @@ export default defineComponent({
 		},
 		addRecord() {
 			const newRecord = {
-				ProductID: this.gridData.length + 1,
+				ProductID: null,
 				ProductName: "",
-				UnitPrice: 0,
+				UnitPrice: null,
 				Discontinued: false,
-				FirstOrderedOn: new Date().toDateString()
+				AddedDate: new Date()
 			}
-			const data = this.products
+			const data = this.emptyProduct
 			data.unshift(newRecord)
-			this.products = data
-			this.editID = newRecord.ProductID
+			this.emptyProduct = data
+			this.editID = 0
 			this.getData()
 		},
 		itemChange(e: any) {
@@ -178,17 +188,11 @@ export default defineComponent({
 			}
 			console.log("closeEdit", e)
 		},
-		edit: function (e: any) {
-			console.log("edit", e)
+		editHandler(e: any) {
+			console.log(e)
 		},
-		save: function (e: any) {
-			console.log("save", e)
-		},
-		cancel(e: any) {
-			console.log("cancel", e)
-		},
-		remove(e: any) {
-			console.log("remove", e)
+		removeHandler(e: any) {
+			console.log(e)
 		}
 	},
 	watch: {

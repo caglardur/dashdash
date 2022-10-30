@@ -1294,13 +1294,13 @@
     "@progress/kendo-vue-labels" "3.6.4"
     "@progress/kendo-vue-popup" "3.6.4"
 
-"@progress/kendo-vue-dialogs@^3.6.0":
-  "integrity" "sha512-HDnl/2GBRJYKAhNlld6Xa1OQvqrFsq6KtaR4RjDsGwp2JjOlOFUBVCADGfaEJfh39jDikKMEqNW+JLdemDbsJA=="
-  "resolved" "https://registry.npmjs.org/@progress/kendo-vue-dialogs/-/kendo-vue-dialogs-3.6.4.tgz"
-  "version" "3.6.4"
+"@progress/kendo-vue-dialogs@^3.6.0", "@progress/kendo-vue-dialogs@^3.7.1":
+  "integrity" "sha512-Kz0Ld0x6Ew5LQg8xdkGOYENaaW8W12MVqFETPhmvU3mIHOkPkrmQi0whuODqDx5U5LKC4xden5sVbt5w2ddcIw=="
+  "resolved" "https://registry.npmjs.org/@progress/kendo-vue-dialogs/-/kendo-vue-dialogs-3.7.1.tgz"
+  "version" "3.7.1"
   dependencies:
-    "@progress/kendo-vue-buttons" "3.6.4"
-    "@progress/kendo-vue-common" "3.6.4"
+    "@progress/kendo-vue-buttons" "3.7.1"
+    "@progress/kendo-vue-common" "3.7.1"
 
 "@progress/kendo-vue-dropdowns@^3.6.0", "@progress/kendo-vue-dropdowns@^3.7.1":
   "integrity" "sha512-P5/vKDBdlFgKagVq5MggLmd9VYGBQTh1sJf7uYfOkfDae8SAIAS+wm8g2H6TuiPEN00mz6j1oAR4M4NXaCFGVw=="
@@ -1332,15 +1332,15 @@
   dependencies:
     "@progress/kendo-vue-common" "3.6.4"
 
-"@progress/kendo-vue-inputs@^3.6.0":
-  "integrity" "sha512-TCQ31jhZPT/Fwh/+2hbeDgUnoxZ+E+zSKzbAH0A/3FDnpESZmUpekvm4BwAKpxv6ghgc08onbidBhsDzaiFoUw=="
-  "resolved" "https://registry.npmjs.org/@progress/kendo-vue-inputs/-/kendo-vue-inputs-3.6.4.tgz"
-  "version" "3.6.4"
+"@progress/kendo-vue-inputs@^3.6.0", "@progress/kendo-vue-inputs@^3.7.1":
+  "integrity" "sha512-Y6+IBsHd0db2cIgqObfN3s3VxA+/fGrETKv4RzjMjs0Y3cFPJMVKSkGWR8jfeULF52zuTMBIGFYm4eAtFXS0dg=="
+  "resolved" "https://registry.npmjs.org/@progress/kendo-vue-inputs/-/kendo-vue-inputs-3.7.1.tgz"
+  "version" "3.7.1"
   dependencies:
-    "@progress/kendo-vue-buttons" "3.6.4"
-    "@progress/kendo-vue-common" "3.6.4"
-    "@progress/kendo-vue-labels" "3.6.4"
-    "@progress/kendo-vue-popup" "3.6.4"
+    "@progress/kendo-vue-buttons" "3.7.1"
+    "@progress/kendo-vue-common" "3.7.1"
+    "@progress/kendo-vue-labels" "3.7.1"
+    "@progress/kendo-vue-popup" "3.7.1"
 
 "@progress/kendo-vue-intl@^3.6.0", "@progress/kendo-vue-intl@^3.6.4":
   "integrity" "sha512-SqrtiZvsw3El98Dp4jhoM0BgjHGOn7dW7D+k9bR8joY7AYddaS0BsQ3V5yC84OC9FpR5BCzRbM1Dg9AOfSxazQ=="
@@ -1356,6 +1356,13 @@
   "version" "3.6.4"
   dependencies:
     "@progress/kendo-vue-common" "3.6.4"
+
+"@progress/kendo-vue-labels@3.7.1":
+  "integrity" "sha512-ZR3yH7s5PRkF2SqGB6lk9GUXjlQUg00EtWmL1XEcHWMIgersaDhs7+WLO+Z+SAjBj+U357ye7+sCsYZkQvCGjw=="
+  "resolved" "https://registry.npmjs.org/@progress/kendo-vue-labels/-/kendo-vue-labels-3.7.1.tgz"
+  "version" "3.7.1"
+  dependencies:
+    "@progress/kendo-vue-common" "3.7.1"
 
 "@progress/kendo-vue-popup@^3.6.0", "@progress/kendo-vue-popup@3.6.4":
   "integrity" "sha512-omClpmf/9VY8qNl7/73ivew7nyrqmcDxdvN3qBdyI02s3yi01ARiGy7OAxBoY7KleyxLoY62docntCgyv3TNaw=="
@@ -4080,11 +4087,6 @@
   "integrity" "sha512-OO0pH2lK6a0hZnAdau5ItzHPI6pUlvI7jMVnxUQRtw4owF2wk8lOSabtGDCTP4Ggrg2MbGnWO9X8K1t4+fGMDw=="
   "resolved" "https://registry.npmjs.org/fs.realpath/-/fs.realpath-1.0.0.tgz"
   "version" "1.0.0"
-
-"fsevents@~2.3.2":
-  "integrity" "sha512-xiqMQR4xAeHTuB9uWm+fFRcIOgKBMiOBP+eXiyT7jsgVCq1bkVygt00oASowB7EdtpOHaaPgKt812P9ab+DDKA=="
-  "resolved" "https://registry.npmjs.org/fsevents/-/fsevents-2.3.2.tgz"
-  "version" "2.3.2"
 
 "function-bind@^1.1.1":
   "integrity" "sha512-yIovAzMX49sF8Yl58fSCWJ5svSLuaibPxXQJFLmBObTuCr0Mf1KiPopGM9NiFjiYBCbfaa2Fh6breQ6ANVTI0A=="
