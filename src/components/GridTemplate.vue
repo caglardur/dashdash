@@ -1,22 +1,34 @@
 <template>
 	<v-container fluid>
-		<Grid ref="grid" :data-items="gridData" :columns="columns" :edit-field="'inEdit'" :skip="skip" :sortable="true" :sort="sort" :filter="filter" @datastatechange="dataStateChange" :column-menu="columnMenu" :resizable="true" @itemchange="itemChange" :navigatable="true" @keydown="onKeydown">
+		<Grid ref="grid" :data-items="gridData" :columns="columns" :edit-field="'inEdit'" :skip="skip" :sortable="true" :sort="sort" :filter="filter" @datastatechange="dataStateChange" :column-menu="columnMenu" :resizable="true" @itemchange="itemChange" :navigatable="true" @cellkeydown="onKeydown">
 			<template v-slot:myTemplate="{ props }">
-				<td class="k-command-cell">
+				<td class="k-command-cell" v-bind="props">
 					<kbutton class="k-grid-save-command text-white" :type="'button'" :theme-color="'primary'" @click="editHandler(props)"> Ekle </kbutton>
 					<kbutton class="k-grid-cancel-command" :type="'button'" @click="removeHandler(props)"> Sil </kbutton>
 				</td>
+			</template>
+			<template v-slot:Index="{ props }">
+				<td v-bind="props" class="ta-center">{{ gridData.map(x => x.ProductID).indexOf(props.dataItem.ProductID) }}</td>
+			</template>
+			<template v-for="(column, index) in editableColumns" v-slot:[column]="{ props }" :key="index">
+				<td v-bind="props">{{ props.dataItem[column] }}</td>
 			</template>
 			<grid-toolbar>
 				<div @click="closeEdit">
 					<kbutton title="Add new" :theme-color="'primary'" @click="addRecord"> Add new (satır) </kbutton>
 				</div>
 				<div>
-					<kbutton title="Add new" :theme-color="'primary'"> Add new (popup) </kbutton>
+					<kbutton title="Add new" :theme-color="'primary'" @click="toggleDialog"> Add new (popup) </kbutton>
 				</div>
 			</grid-toolbar>
 		</Grid>
-		<dialog-container v-if="productInEdit" :data-item="productInEdit"> </dialog-container>
+		<k-dialog v-if="visibleDialog" :title="'Please confirm'" @close="toggleDialog">
+			<p :style="{ margin: '25px', textAlign: 'center' }">Are you sure you want to continue?</p>
+			<dialog-actions-bar>
+				<kbutton @click="toggleDialog">No</kbutton>
+				<kbutton @click="toggleDialog">Yes</kbutton>
+			</dialog-actions-bar>
+		</k-dialog>
 	</v-container>
 </template>
 
@@ -25,6 +37,7 @@ import { defineComponent } from "vue"
 import { State, process } from "@progress/kendo-data-query"
 import { Button } from "@progress/kendo-vue-buttons"
 import { Grid, GridColumnProps, GridToolbar } from "@progress/kendo-vue-grid"
+import { Dialog, DialogActionsBar } from "@progress/kendo-vue-dialogs"
 
 interface GridDataItem {
 	ProductID: number | null
@@ -40,10 +53,13 @@ export default defineComponent({
 	components: {
 		Grid: Grid,
 		kbutton: Button,
-		"grid-toolbar": GridToolbar
+		"grid-toolbar": GridToolbar,
+		"dialog-actions-bar": DialogActionsBar,
+		"k-dialog": Dialog
 	},
 	data() {
 		return {
+			visibleDialog: false,
 			productInEdit: {
 				ProductName: String(),
 				UnitsInStock: Number(),
@@ -57,8 +73,18 @@ export default defineComponent({
 			editID: -1,
 			editItem: -1,
 			editField: "",
-			editableColumns: ["ProductID", "ProductName", "UnitPrice", "Discontinued", "FirstOrderedOn"],
-			columns: [{ field: "Index" }, { field: "ProductID", filter: "numeric" }, { field: "ProductName", filter: "text", editable: false }, { field: "UnitPrice", filter: "numeric" }, { field: "UnitAmount", filter: "numeric" }, { field: "Discontinued", filter: "boolean", editable: false }, { field: "AddedDate", filter: "date", editable: false }, { cell: "myTemplate", filterable: false, width: "220px" }] || Array<GridColumnProps>(),
+			editableColumns: ["ProductID", "UnitPrice", "UnitAmount"],
+			columns:
+				[
+					{ title: "No", field: "Index", cell: "Index", width: "48px", sortable: false, columnMenu: false },
+					{ field: "ProductID", filter: "numeric", cell: "ProductID" },
+					{ field: "ProductName", filter: "text", editable: false },
+					{ field: "UnitPrice", filter: "numeric", cell: "UnitPrice" },
+					{ field: "UnitAmount", filter: "numeric", cell: "UnitAmount" },
+					{ field: "Discontinued", filter: "boolean", editable: false },
+					{ field: "AddedDate", filter: "date", editable: false },
+					{ cell: "myTemplate", filterable: false, width: "126px", sortable: false, columnMenu: false }
+				] || Array<GridColumnProps>(),
 			products: [
 				{
 					ProductID: 1,
@@ -118,6 +144,9 @@ export default defineComponent({
 		this.getData()
 	},
 	methods: {
+		toggleDialog() {
+			this.visibleDialog = !this.visibleDialog
+		},
 		insert() {
 			this.productInEdit = {
 				ProductName: "",
@@ -127,11 +156,20 @@ export default defineComponent({
 		},
 		onKeydown(e: any) {
 			console.log("onKeydown", e)
+			if (e.event.key == "Enter") {
+				console.log("enterr")
+				const findIndex = this.gridData.findIndex(k => k.ProductID == e.dataItem.ProductID)
+				this.gridData[findIndex].inEdit = true
+			} else if (e.event.key == "Escape") {
+				console.log("escape")
+				const findIndex = this.gridData.findIndex(k => k.ProductID == e.dataItem.ProductID)
+				this.gridData[findIndex].inEdit = false
+			}
 		},
 		enterFunc(e: any) {
 			console.log("enter", e)
 		},
-		rowClick: function (e: any) {
+		rowClick(e: any) {
 			this.gridData.forEach((d: any) => {
 				console.log("rowClick forEach", d.inEdit)
 				if (d.inEdit) {
@@ -147,7 +185,7 @@ export default defineComponent({
 				filter: this.filter!,
 				sort: this.sort
 			}
-			this.gridData = this.emptyProduct.map((product: GridDataItem) => Object.assign({ inEdit: true }, product))
+			this.gridData = this.products.map((product: GridDataItem) => Object.assign({ inEdit: false }, product))
 			this.gridData = process(this.gridData, this.dataState).data
 		},
 		createAppState(dataState: any) {
@@ -163,15 +201,16 @@ export default defineComponent({
 		},
 		addRecord() {
 			const newRecord = {
-				ProductID: null,
+				ProductID: null || Number(),
 				ProductName: "",
-				UnitPrice: null,
+				UnitPrice: null || Number(),
+				UnitAmount: 100,
 				Discontinued: false,
 				AddedDate: new Date()
 			}
-			const data = this.emptyProduct
+			const data = this.products
 			data.unshift(newRecord)
-			this.emptyProduct = data
+			this.products = data
 			this.editID = 0
 			this.getData()
 		},
