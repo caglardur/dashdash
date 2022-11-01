@@ -20,7 +20,7 @@
     "@progress/kendo-vue-dialogs": "^3.7.1",
     "@progress/kendo-vue-dropdowns": "^3.7.1",
     "@progress/kendo-vue-grid": "^3.6.4",
-    "@progress/kendo-vue-inputs": "^3.7.1",
+    "@progress/kendo-vue-inputs": "^3.7.2",
     "@progress/kendo-vue-intl": "^3.6.4",
     "@progress/kendo-vue-scheduler": "^3.6.4",
     "chart.js": "^3.9.1",

@@ -1,22 +1,22 @@
 <template>
 	<v-container fluid>
-		<Grid ref="grid" :data-items="gridData" :columns="columns" :edit-field="'inEdit'" :skip="skip" :sortable="true" :sort="sort" :filter="filter" @datastatechange="dataStateChange" :column-menu="columnMenu" :resizable="true" @itemchange="itemChange" :navigatable="true" @cellkeydown="onKeydown">
+		<Grid ref="grid" :data-items="gridData" :columns="columns" :edit-field="'inEdit'" :skip="skip" :sortable="true" :sort="sort" :filter="filter" @datastatechange="dataStateChange" :column-menu="columnMenu" :resizable="true" @itemchange="itemChange" :navigatable="true" @filterchange="createAppState">
 			<template v-slot:myTemplate="{ props }">
 				<td class="k-command-cell" v-bind="props">
-					<kbutton class="k-grid-save-command text-white" :type="'button'" :theme-color="'primary'" @click="editHandler(props)"> Ekle </kbutton>
-					<kbutton class="k-grid-cancel-command" :type="'button'" @click="removeHandler(props)"> Sil </kbutton>
+					<kbutton class="k-grid-cancel-command" :type="'button'" @click="removeHandler(props.dataItem)"> Sil </kbutton>
 				</td>
 			</template>
-			<template v-slot:Index="{ props }">
-				<td v-bind="props" class="ta-center">{{ gridData.map(x => x.ProductID).indexOf(props.dataItem.ProductID) }}</td>
-			</template>
-			<template v-for="(column, index) in editableColumns" v-slot:[column]="{ props }" :key="index">
-				<td v-bind="props">{{ props.dataItem[column] }}</td>
-			</template>
 			<grid-toolbar>
-				<div @click="closeEdit">
-					<kbutton title="Add new" :theme-color="'primary'" @click="addRecord"> Add new (satır) </kbutton>
-				</div>
+				<v-col cols="auto">
+					<v-row>
+						<v-col cols="auto">
+							<KInput v-model="addProductID" editor="numeric" placeholder="Product ID" :style="{ width: '230px' }" @keydown.enter="addRecord"></KInput>
+						</v-col>
+						<v-col cols="auto" class="ps-0">
+							<kbutton title="Add new" :theme-color="'primary'" @click="addRecord"> Ekle </kbutton>
+						</v-col>
+					</v-row>
+				</v-col>
 				<div>
 					<kbutton title="Add new" :theme-color="'primary'" @click="toggleDialog"> Add new (popup) </kbutton>
 				</div>
@@ -29,6 +29,12 @@
 				<kbutton @click="toggleDialog">Yes</kbutton>
 			</dialog-actions-bar>
 		</k-dialog>
+		<k-dialog v-if="noItemDialog" :title="'Hata'" @close="toggleDialog">
+			<p :style="{ margin: '5px', textAlign: 'center' }">Ürün bulunamadı.</p>
+			<dialog-actions-bar>
+				<kbutton @click="toggleItemDialog">Ok</kbutton>
+			</dialog-actions-bar>
+		</k-dialog>
 	</v-container>
 </template>
 
@@ -38,14 +44,22 @@ import { State, process } from "@progress/kendo-data-query"
 import { Button } from "@progress/kendo-vue-buttons"
 import { Grid, GridColumnProps, GridToolbar } from "@progress/kendo-vue-grid"
 import { Dialog, DialogActionsBar } from "@progress/kendo-vue-dialogs"
+import { Input } from "@progress/kendo-vue-inputs"
 
 interface GridDataItem {
-	ProductID: number | null
+	ProductID: number
 	ProductName: string
-	UnitPrice: number | null
+	UnitPrice: number
+	UnitAmount: number
 	Discontinued: boolean
 	AddedDate: Date
 	inEdit?: boolean
+}
+
+interface ProductItem {
+	ProductID: number
+	ProductName: string
+	UnitPrice: number
 }
 
 export default defineComponent({
@@ -55,11 +69,15 @@ export default defineComponent({
 		kbutton: Button,
 		"grid-toolbar": GridToolbar,
 		"dialog-actions-bar": DialogActionsBar,
-		"k-dialog": Dialog
+		"k-dialog": Dialog,
+		KInput: Input
 	},
+
 	data() {
 		return {
+			addProductID: null || Number(),
 			visibleDialog: false,
+			noItemDialog: false,
 			productInEdit: {
 				ProductName: String(),
 				UnitsInStock: Number(),
@@ -73,69 +91,50 @@ export default defineComponent({
 			editID: -1,
 			editItem: -1,
 			editField: "",
-			editableColumns: ["ProductID", "UnitPrice", "UnitAmount"],
 			columns:
 				[
-					{ title: "No", field: "Index", cell: "Index", width: "48px", sortable: false, columnMenu: false },
-					{ field: "ProductID", filter: "numeric", cell: "ProductID" },
+					{ field: "ProductID", filter: "numeric", editor: "text" },
 					{ field: "ProductName", filter: "text", editable: false },
-					{ field: "UnitPrice", filter: "numeric", cell: "UnitPrice" },
-					{ field: "UnitAmount", filter: "numeric", cell: "UnitAmount" },
-					{ field: "Discontinued", filter: "boolean", editable: false },
-					{ field: "AddedDate", filter: "date", editable: false },
-					{ cell: "myTemplate", filterable: false, width: "126px", sortable: false, columnMenu: false }
+					{ field: "UnitPrice", filter: "numeric", editor: "numeric" },
+					{ field: "UnitAmount", filter: "numeric", editor: "numeric" },
+					{ field: "Discontinued", filter: "boolean", editor: "boolean" },
+					{ field: "AddedDate", filter: "date", editor: "date" },
+					{ cell: "myTemplate", filterable: false, width: "62px", sortable: false, columnMenu: false }
 				] || Array<GridColumnProps>(),
-			products: [
-				{
-					ProductID: 1,
-					ProductName: "Chai",
-					UnitPrice: 39,
-					UnitAmount: 100,
-					Discontinued: false,
-					AddedDate: new Date(1996, 8, 20)
-				},
-				{
-					ProductID: 2,
-					ProductName: "Chang",
-					UnitPrice: 17,
-					UnitAmount: 100,
-					Discontinued: false,
-					AddedDate: new Date(1996, 7, 12)
-				},
-				{
-					ProductID: 3,
-					ProductName: "Aniseed Syrup",
-					UnitPrice: 13,
-					UnitAmount: 100,
-					Discontinued: false,
-					AddedDate: new Date(1996, 8, 26)
-				},
-				{
-					ProductID: 4,
-					ProductName: "Chef Anton's Cajun Seasoning",
-					UnitPrice: 53,
-					UnitAmount: 100,
-					Discontinued: false,
-					AddedDate: new Date(1996, 8, 19)
-				},
-				{
-					ProductID: 5,
-					ProductName: " Seasoning",
-					UnitPrice: 63,
-					UnitAmount: 100,
-					Discontinued: false,
-					AddedDate: new Date(1996, 11, 19)
-				},
-				{
-					ProductID: 6,
-					ProductName: "Cajun Seasoning",
-					UnitPrice: 24,
-					UnitAmount: 100,
-					Discontinued: false,
-					AddedDate: new Date(1996, 3, 19)
-				}
-			],
-			emptyProduct: Array<GridDataItem>(),
+			products:
+				[
+					{
+						ProductID: 1,
+						ProductName: "Chai",
+						UnitPrice: 50
+					},
+					{
+						ProductID: 2,
+						ProductName: "Chang",
+						UnitPrice: 70
+					},
+					{
+						ProductID: 3,
+						ProductName: "Aniseed Syrup",
+						UnitPrice: 60
+					},
+					{
+						ProductID: 4,
+						ProductName: "Chef Anton's Cajun Seasoning",
+						UnitPrice: 50
+					},
+					{
+						ProductID: 5,
+						ProductName: " Seasoning",
+						UnitPrice: 100
+					},
+					{
+						ProductID: 6,
+						ProductName: "Cajun Seasoning",
+						UnitPrice: 50
+					}
+				] || Array<ProductItem>(),
+			productArray: Array<GridDataItem>(),
 			gridData: Array<GridDataItem>(),
 			dataState: Object as State
 		}
@@ -147,6 +146,9 @@ export default defineComponent({
 		toggleDialog() {
 			this.visibleDialog = !this.visibleDialog
 		},
+		toggleItemDialog() {
+			this.noItemDialog = !this.noItemDialog
+		},
 		insert() {
 			this.productInEdit = {
 				ProductName: "",
@@ -154,89 +156,82 @@ export default defineComponent({
 				Discontinued: false
 			}
 		},
-		onKeydown(e: any) {
-			console.log("onKeydown", e)
-			if (e.event.key == "Enter") {
-				console.log("enterr")
-				const findIndex = this.gridData.findIndex(k => k.ProductID == e.dataItem.ProductID)
-				this.gridData[findIndex].inEdit = true
-			} else if (e.event.key == "Escape") {
-				console.log("escape")
-				const findIndex = this.gridData.findIndex(k => k.ProductID == e.dataItem.ProductID)
-				this.gridData[findIndex].inEdit = false
-			}
-		},
-		enterFunc(e: any) {
-			console.log("enter", e)
-		},
-		rowClick(e: any) {
-			this.gridData.forEach((d: any) => {
-				console.log("rowClick forEach", d.inEdit)
-				if (d.inEdit) {
-					d.inEdit = undefined
-				}
-			})
-			this.gridData = [...this.gridData]
-		},
 		getData() {
 			this.dataState = {
 				take: this.take,
 				skip: this.skip,
-				filter: this.filter!,
+				filter: this.filter ?? undefined,
 				sort: this.sort
 			}
-			this.gridData = this.products.map((product: GridDataItem) => Object.assign({ inEdit: false }, product))
+			this.gridData = this.productArray.map((product: GridDataItem) => Object.assign({ inEdit: true, Discontinued: false, AddedDate: new Date(), UnitAmount: 100 }, product))
+			this.gridData = process(this.gridData, this.dataState).data
+		},
+		shortData() {
+			console.log("shortData")
+			this.dataState = {
+				take: this.take,
+				skip: this.skip,
+				filter: this.filter ?? undefined,
+				sort: this.sort
+			}
+			console.log("gridData", this.gridData)
+			this.gridData = this.productArray.map((product: GridDataItem) => Object.assign({ inEdit: true, Discontinued: false, UnitAmount: 100, AddedDate: new Date() }, product))
 			this.gridData = process(this.gridData, this.dataState).data
 		},
 		createAppState(dataState: any) {
+			console.log("createAppState", dataState)
 			this.take = dataState.take
 			this.skip = dataState.skip
 			this.sort = dataState.sort
 			this.filter = dataState.filter
-			this.getData()
+			this.shortData()
 		},
 		dataStateChange(event: any) {
-			console.log(event, "dataStateChange")
+			console.log("dataStateChange", event)
 			this.createAppState(event.data)
 		},
 		addRecord() {
-			const newRecord = {
-				ProductID: null || Number(),
-				ProductName: "",
-				UnitPrice: null || Number(),
-				UnitAmount: 100,
-				Discontinued: false,
-				AddedDate: new Date()
+			console.log("addRecord", this.addProductID)
+			const findItem = this.products.find((item: ProductItem) => item.ProductID == this.addProductID)
+			console.log("findItem", findItem)
+
+			if (findItem) {
+				const data = this.productArray
+				data.push(Object.assign({ inEdit: true, Discontinued: false, UnitAmount: 100, AddedDate: new Date() }, findItem))
+				this.productArray = data
+				this.shortData()
+				this.addProductID = Number()
+			} else {
+				this.toggleItemDialog()
 			}
-			const data = this.products
-			data.unshift(newRecord)
-			this.products = data
-			this.editID = 0
-			this.getData()
 		},
 		itemChange(e: any) {
+			if (e.field == "ProductID") {
+				const dataNew = this.products.slice()
+				const dataOld = this.productArray.slice()
+				const indexItem = dataNew.findIndex(d => d.ProductID == e.value)
+				const indexOldItem = dataOld.findIndex(d => d.ProductID == e.dataItem.ProductID)
+
+				dataOld.splice(indexOldItem, 1, Object.assign({ inEdit: true, Discontinued: false, UnitAmount: 100, AddedDate: new Date() }, dataNew[indexItem]))
+				console.log("dataOld", dataOld)
+				this.productArray = dataOld
+				this.shortData()
+			}
+
 			const data = this.gridData.slice()
 			const index = data.findIndex(d => d.ProductID === e.dataItem.ProductID)
 			data[index] = { ...data[index], [e.field]: e.value }
 			this.gridData = data
-			console.log(e, "itemChange")
-		},
-		closeEdit(e: any) {
-			if (e.target === e.currentTarget) {
-				this.editID = -1
-			}
-			console.log("closeEdit", e)
+			console.log("itemChange", e)
 		},
 		editHandler(e: any) {
 			console.log(e)
 		},
-		removeHandler(e: any) {
-			console.log(e)
-		}
-	},
-	watch: {
-		gridData() {
-			console.log("gridData watch", this.gridData)
+		removeHandler(e: GridDataItem) {
+			console.log("removeHandler", e)
+			const data = this.productArray.slice()
+			this.productArray = data.filter(d => d.ProductID != e.ProductID && d.ProductName != e.ProductName && d.UnitPrice != e.UnitPrice)
+			this.shortData()
 		}
 	}
 })
