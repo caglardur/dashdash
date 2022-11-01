@@ -23,7 +23,7 @@
 			</grid-toolbar>
 		</Grid>
 		<k-dialog v-if="visibleDialog" :title="'Please confirm'" @close="toggleDialog">
-			<p :style="{ margin: '25px', textAlign: 'center' }">Are you sure you want to continue?</p>
+			<Grid :data-items="products" :columns="productsCol"></Grid>
 			<dialog-actions-bar>
 				<kbutton @click="toggleDialog">No</kbutton>
 				<kbutton @click="toggleDialog">Yes</kbutton>
@@ -101,6 +101,11 @@ export default defineComponent({
 					{ field: "AddedDate", filter: "date", editor: "date" },
 					{ cell: "myTemplate", filterable: false, width: "62px", sortable: false, columnMenu: false }
 				] || Array<GridColumnProps>(),
+			productsCol: [
+				{ field: "ProductID", filter: "numeric", editable: false },
+				{ field: "ProductName", filter: "text", editable: false },
+				{ field: "UnitPrice", filter: "numeric", editable: false }
+			],
 			products:
 				[
 					{
@@ -134,7 +139,7 @@ export default defineComponent({
 						UnitPrice: 50
 					}
 				] || Array<ProductItem>(),
-			productArray: Array<GridDataItem>(),
+
 			gridData: Array<GridDataItem>(),
 			dataState: Object as State
 		}
@@ -163,7 +168,7 @@ export default defineComponent({
 				filter: this.filter ?? undefined,
 				sort: this.sort
 			}
-			this.gridData = this.productArray.map((product: GridDataItem) => Object.assign({ inEdit: true, Discontinued: false, AddedDate: new Date(), UnitAmount: 100 }, product))
+			this.gridData = [...this.gridData.map((product: GridDataItem) => Object.assign({ inEdit: true, Discontinued: false, AddedDate: new Date(), UnitAmount: 100 }, product))]
 			this.gridData = process(this.gridData, this.dataState).data
 		},
 		shortData() {
@@ -175,7 +180,7 @@ export default defineComponent({
 				sort: this.sort
 			}
 			console.log("gridData", this.gridData)
-			this.gridData = this.productArray.map((product: GridDataItem) => Object.assign({ inEdit: true, Discontinued: false, UnitAmount: 100, AddedDate: new Date() }, product))
+			this.gridData = [...this.gridData.map((product: GridDataItem) => Object.assign({ inEdit: true, Discontinued: false, UnitAmount: 100, AddedDate: new Date() }, product))]
 			this.gridData = process(this.gridData, this.dataState).data
 		},
 		createAppState(dataState: any) {
@@ -196,9 +201,9 @@ export default defineComponent({
 			console.log("findItem", findItem)
 
 			if (findItem) {
-				const data = this.productArray
+				const data = this.gridData
 				data.push(Object.assign({ inEdit: true, Discontinued: false, UnitAmount: 100, AddedDate: new Date() }, findItem))
-				this.productArray = data
+				this.gridData = data
 				this.shortData()
 				this.addProductID = Number()
 			} else {
@@ -208,13 +213,13 @@ export default defineComponent({
 		itemChange(e: any) {
 			if (e.field == "ProductID") {
 				const dataNew = this.products.slice()
-				const dataOld = this.productArray.slice()
+				const dataOld = this.gridData.slice()
 				const indexItem = dataNew.findIndex(d => d.ProductID == e.value)
 				const indexOldItem = dataOld.findIndex(d => d.ProductID == e.dataItem.ProductID)
 
 				dataOld.splice(indexOldItem, 1, Object.assign({ inEdit: true, Discontinued: false, UnitAmount: 100, AddedDate: new Date() }, dataNew[indexItem]))
 				console.log("dataOld", dataOld)
-				this.productArray = dataOld
+				this.gridData = dataOld
 				this.shortData()
 			}
 
@@ -229,8 +234,8 @@ export default defineComponent({
 		},
 		removeHandler(e: GridDataItem) {
 			console.log("removeHandler", e)
-			const data = this.productArray.slice()
-			this.productArray = data.filter(d => d.ProductID != e.ProductID && d.ProductName != e.ProductName && d.UnitPrice != e.UnitPrice)
+			const data = this.gridData.slice()
+			this.gridData = data.filter(d => d.ProductID != e.ProductID && d.ProductName != e.ProductName && d.UnitPrice != e.UnitPrice)
 			this.shortData()
 		}
 	}
