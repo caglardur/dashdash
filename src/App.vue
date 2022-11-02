@@ -12,13 +12,16 @@
 import { defineComponent } from "vue"
 import TopNavigation from "./navigations/TopNavigation.vue"
 import LeftNavigation from "./navigations/LeftNavigation.vue"
+// import { IntlProvider, load } from "@progress/kendo-vue-intl"
+
 // import "@progress/kendo-theme-material/dist/all.css"
 
 export default defineComponent({
 	name: "App",
 	data() {
 		return {
-			leftNavigationMini: true
+			leftNavigationMini: true,
+			locale: "tr-TR"
 		}
 	},
 	methods: {

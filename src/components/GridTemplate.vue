@@ -22,11 +22,12 @@
 				</div>
 			</grid-toolbar>
 		</Grid>
-		<k-dialog v-if="visibleDialog" :title="'Please confirm'" @close="toggleDialog">
-			<Grid :data-items="products" :columns="productsCol"></Grid>
+		<k-dialog v-if="visibleDialog" :title="'Please confirm'" @close="toggleDialog" width="650px">
+			<v-col>
+				<Grid :data-items="productsFiltered" :columns="productsCol" :filterable="true" :filter="filterDialog" @filterchange="onFilterDialogChange"></Grid>
+			</v-col>
 			<dialog-actions-bar>
-				<kbutton @click="toggleDialog">No</kbutton>
-				<kbutton @click="toggleDialog">Yes</kbutton>
+				<kbutton @click="toggleDialog">Kapat</kbutton>
 			</dialog-actions-bar>
 		</k-dialog>
 		<k-dialog v-if="noItemDialog" :title="'Hata'" @close="toggleDialog">
@@ -40,11 +41,12 @@
 
 <script lang="ts">
 import { defineComponent } from "vue"
-import { State, process } from "@progress/kendo-data-query"
+import { State, process, CompositeFilterDescriptor } from "@progress/kendo-data-query"
 import { Button } from "@progress/kendo-vue-buttons"
 import { Grid, GridColumnProps, GridToolbar } from "@progress/kendo-vue-grid"
 import { Dialog, DialogActionsBar } from "@progress/kendo-vue-dialogs"
 import { Input } from "@progress/kendo-vue-inputs"
+import { filterBy } from "@progress/kendo-data-query"
 
 interface GridDataItem {
 	ProductID: number
@@ -73,9 +75,18 @@ export default defineComponent({
 		KInput: Input
 	},
 
-	data() {
+	data: function () {
 		return {
-			addProductID: null || Number(),
+			defaultGroupFilter: {
+				logic: "and",
+				filters: []
+			} as CompositeFilterDescriptor,
+			filterDialog: {
+				logic: "and",
+				filters: []
+			} as CompositeFilterDescriptor,
+			searchTerm: "",
+			addProductID: Number(),
 			visibleDialog: false,
 			noItemDialog: false,
 			productInEdit: {
@@ -91,63 +102,76 @@ export default defineComponent({
 			editID: -1,
 			editItem: -1,
 			editField: "",
-			columns:
-				[
-					{ field: "ProductID", filter: "numeric", editor: "text" },
-					{ field: "ProductName", filter: "text", editable: false },
-					{ field: "UnitPrice", filter: "numeric", editor: "numeric" },
-					{ field: "UnitAmount", filter: "numeric", editor: "numeric" },
-					{ field: "Discontinued", filter: "boolean", editor: "boolean" },
-					{ field: "AddedDate", filter: "date", editor: "date" },
-					{ cell: "myTemplate", filterable: false, width: "62px", sortable: false, columnMenu: false }
-				] || Array<GridColumnProps>(),
+			columns: [
+				{ field: "ProductID", filter: "numeric", editor: "text" },
+				{ field: "ProductName", filter: "text", editable: false },
+				{ field: "UnitPrice", filter: "numeric", editor: "numeric" },
+				{ field: "UnitAmount", filter: "numeric", editor: "numeric" },
+				{ field: "Discontinued", filter: "boolean", editor: "boolean" },
+				{ field: "AddedDate", filter: "date", editor: "date" },
+				{ cell: "myTemplate", filterable: false, width: "62px", sortable: false, columnMenu: false }
+			] as GridColumnProps[],
 			productsCol: [
 				{ field: "ProductID", filter: "numeric", editable: false },
 				{ field: "ProductName", filter: "text", editable: false },
 				{ field: "UnitPrice", filter: "numeric", editable: false }
-			],
-			products:
-				[
-					{
-						ProductID: 1,
-						ProductName: "Chai",
-						UnitPrice: 50
-					},
-					{
-						ProductID: 2,
-						ProductName: "Chang",
-						UnitPrice: 70
-					},
-					{
-						ProductID: 3,
-						ProductName: "Aniseed Syrup",
-						UnitPrice: 60
-					},
-					{
-						ProductID: 4,
-						ProductName: "Chef Anton's Cajun Seasoning",
-						UnitPrice: 50
-					},
-					{
-						ProductID: 5,
-						ProductName: " Seasoning",
-						UnitPrice: 100
-					},
-					{
-						ProductID: 6,
-						ProductName: "Cajun Seasoning",
-						UnitPrice: 50
-					}
-				] || Array<ProductItem>(),
+			] as GridColumnProps[],
+			products: [
+				{
+					ProductID: 1,
+					ProductName: "Chai",
+					UnitPrice: 50
+				},
+				{
+					ProductID: 2,
+					ProductName: "Chang",
+					UnitPrice: 70
+				},
+				{
+					ProductID: 3,
+					ProductName: "Aniseed Syrup",
+					UnitPrice: 60
+				},
+				{
+					ProductID: 4,
+					ProductName: "Chef Anton's Cajun Seasoning",
+					UnitPrice: 50
+				},
+				{
+					ProductID: 5,
+					ProductName: " Seasoning",
+					UnitPrice: 100
+				},
+				{
+					ProductID: 6,
+					ProductName: "Cajun Seasoning",
+					UnitPrice: 50
+				}
+			] as ProductItem[],
 
 			gridData: Array<GridDataItem>(),
 			dataState: Object as State
+		}
+	},
+	computed: {
+		productsFiltered(): ProductItem[] {
+			return filterBy<ProductItem>(this.products, this.filterDialog)
 		}
 	},
 	created() {
 		this.getData()
 	},
 	methods: {
+		onFilterDialogChange(event: any) {
+			if (event.filter !== null) {
+				this.filterDialog = event.filter
+			} else {
+				this.filterDialog = this.defaultGroupFilter
+			}
+		},
+		searchData() {
+			console.log("searchData")
+		},
 		toggleDialog() {
 			this.visibleDialog = !this.visibleDialog
 		},

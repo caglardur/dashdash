@@ -1364,13 +1364,13 @@
     "@progress/kendo-vue-labels" "3.7.2"
     "@progress/kendo-vue-popup" "3.7.2"
 
-"@progress/kendo-vue-intl@^3.6.0", "@progress/kendo-vue-intl@^3.6.4":
-  "integrity" "sha512-SqrtiZvsw3El98Dp4jhoM0BgjHGOn7dW7D+k9bR8joY7AYddaS0BsQ3V5yC84OC9FpR5BCzRbM1Dg9AOfSxazQ=="
-  "resolved" "https://registry.npmjs.org/@progress/kendo-vue-intl/-/kendo-vue-intl-3.6.4.tgz"
-  "version" "3.6.4"
+"@progress/kendo-vue-intl@^3.6.0", "@progress/kendo-vue-intl@^3.7.2":
+  "integrity" "sha512-gj9lVVq6Unyu0SYf55pCHJMVRpBzhtuPqICLcWK6ansDYtZgwAGQJ7j7bXd5lD8iP1TMRrS80lnik9X9ac/NJw=="
+  "resolved" "https://registry.npmjs.org/@progress/kendo-vue-intl/-/kendo-vue-intl-3.7.2.tgz"
+  "version" "3.7.2"
   dependencies:
     "@progress/kendo-intl" "^3.0.2"
-    "@progress/kendo-vue-common" "3.6.4"
+    "@progress/kendo-vue-common" "3.7.2"
 
 "@progress/kendo-vue-labels@3.6.4":
   "integrity" "sha512-V1nYTQcO0LqHu21I6SfizaVfUe4A1aOQ46SDHo1HVE3IkKqw9I8gpsYO2rCjFVXJ/BpfUyH12H1sSFy4DK3vuw=="
